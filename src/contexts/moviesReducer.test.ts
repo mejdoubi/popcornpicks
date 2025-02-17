@@ -4,15 +4,21 @@ import { State, Action, Movie } from "../types";
 
 describe("moviesReducer", () => {
   const initialState: State = {
+    isFetching: false,
     totalMovies: 0,
     movies: [],
     page: 1,
-    itemsPerPage: 10,
     query: "",
-    error: null,
+    errorMessage: null,
   };
 
-  it("should set movies", () => {
+  it("should set isFetching", () => {
+    const action: Action = { type: "SET_IS_FETCHING", payload: true };
+    const newState = moviesReducer(initialState, action);
+    expect(newState.isFetching).toBe(true);
+  });
+
+  it("should set movies, reset page and errorMessage", () => {
     const movies: Movie[] = [
       {
         id: "1",
@@ -32,6 +38,8 @@ describe("moviesReducer", () => {
     const action: Action = { type: "SET_MOVIES", payload: movies };
     const newState = moviesReducer(initialState, action);
     expect(newState.movies).toEqual(movies);
+    expect(newState.page).toBe(1);
+    expect(newState.errorMessage).toBeNull();
   });
 
   it("should set total movies", () => {
@@ -46,21 +54,18 @@ describe("moviesReducer", () => {
     expect(newState.page).toBe(2);
   });
 
-  it("should set items per page", () => {
-    const action: Action = { type: "SET_ITEMS_PER_PAGE", payload: 20 };
-    const newState = moviesReducer(initialState, action);
-    expect(newState.itemsPerPage).toBe(20);
-  });
-
   it("should set query", () => {
     const action: Action = { type: "SET_QUERY", payload: "test" };
     const newState = moviesReducer(initialState, action);
     expect(newState.query).toBe("test");
   });
 
-  it("should set error", () => {
-    const action: Action = { type: "SET_ERROR", payload: "An error occurred" };
+  it("should set error message", () => {
+    const action: Action = {
+      type: "SET_ERROR_MESSAGE",
+      payload: "An error occurred",
+    };
     const newState = moviesReducer(initialState, action);
-    expect(newState.error).toBe("An error occurred");
+    expect(newState.errorMessage).toBe("An error occurred");
   });
 });

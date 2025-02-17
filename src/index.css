@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@theme {
+  --font-body: Hellix, sans-serif;
+
+  --color-*: initial;
+  --color-primary: hsl(25, 100%, 40%);
+  --color-secondary: hsl(27, 12%, 14%);
+  --color-background: hsl(0, 0%, 5%);
+  --color-text-primary: hsla(0, 0%, 100%);
+  --color-text-secondary: hsla(0, 0%, 100%, 0.7);
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+  }
+}

@@ -1,11 +1,15 @@
 import { ReactNode, useCallback, useEffect, useReducer } from "react";
 
 import { MoviesContext } from "./MoviesContext";
-import { fetchMovies } from "../api/movies";
 import { moviesReducer } from "./moviesReducer";
+import { fetchMovies, fetchMovieByTitle } from "../apis";
 
 import { HTTPValidationError } from "../types";
-import { defaultErrorMessage, initialState } from "../constants";
+import {
+  ITEMS_PER_PAGE,
+  defaultErrorMessage,
+  initialState,
+} from "../constants";
 
 interface MoviesProviderProps {
   children: ReactNode;
@@ -14,49 +18,90 @@ interface MoviesProviderProps {
 export const MoviesProvider = ({ children }: MoviesProviderProps) => {
   const [state, dispatch] = useReducer(moviesReducer, initialState);
 
+  const { isFetching, movies, totalMovies, page, query, errorMessage } = state;
+
+  const setIsFetching = (value: boolean) =>
+    dispatch({ type: "SET_IS_FETCHING", payload: value });
+
   const getMovies = useCallback(async () => {
+    setIsFetching(true);
     try {
-      const data = await fetchMovies({
-        skip: (state.page - 1) * state.itemsPerPage,
-        limit: state.itemsPerPage,
-        query: state.query,
+      const { items, total } = await fetchMovies({
+        skip: (page - 1) * ITEMS_PER_PAGE,
+        limit: ITEMS_PER_PAGE,
+        query: query,
       });
-      dispatch({ type: "SET_MOVIES", payload: data.items });
-      dispatch({ type: "SET_TOTAL_MOVIES", payload: data.total });
+
+      const updatedMovies = await Promise.all(
+        items.map(async (movie) => {
+          let imageUrl = movie.image_url;
+
+          try {
+            const response = await fetchMovieByTitle(movie.title);
+            if (response.results.length > 0) {
+              imageUrl = response.results[0].poster_path;
+            }
+          } catch (error) {
+            console.error(
+              `Error fetching movie by title: ${movie.title}`,
+              error
+            );
+          }
+
+          return {
+            ...movie,
+            image_url: imageUrl,
+          };
+        })
+      );
+
+      dispatch({ type: "SET_MOVIES", payload: updatedMovies });
+      dispatch({ type: "SET_TOTAL_MOVIES", payload: total });
     } catch (error: unknown) {
+      let errorMessage = defaultErrorMessage;
       const errorDetail = (error as HTTPValidationError).detail;
-      const errorMessage = errorDetail
-        ? errorDetail[0].msg
-        : defaultErrorMessage;
+      // fix this if
+      if (typeof errorDetail !== "string" && !!errorDetail[0]?.msg) {
+        errorMessage = `Something went wrong: ${errorDetail[0].msg}`;
+      }
 
-      dispatch({ type: "SET_ERROR", payload: errorMessage });
+      dispatch({ type: "SET_ERROR_MESSAGE", payload: errorMessage });
+    } finally {
+      setIsFetching(false);
     }
-  }, [state.page, state.itemsPerPage, state.query]);
+  }, [page, query]);
 
-  const nextPage = () =>
-    dispatch({ type: "SET_PAGE", payload: state.page + 1 });
+  const nextPage = () => dispatch({ type: "SET_PAGE", payload: page + 1 });
+
   const previousPage = () =>
-    dispatch({ type: "SET_PAGE", payload: Math.max(state.page - 1, 1) });
-  const setItemsPerPageCount = (count: number) =>
-    dispatch({ type: "SET_ITEMS_PER_PAGE", payload: count });
-  const setQueryString = (queryString: string) =>
-    dispatch({ type: "SET_QUERY", payload: queryString });
+    dispatch({ type: "SET_PAGE", payload: Math.max(page - 1, 1) });
+
+  const setQueryString = (queryString: string) => {
+    if (queryString !== query) {
+      dispatch({ type: "SET_QUERY", payload: queryString });
+    }
+  };
+
+  const isNextPageDisabled = page * ITEMS_PER_PAGE >= totalMovies;
+  const isPreviousPageDisabled = page === 1;
 
   useEffect(() => {
     getMovies();
-  }, [getMovies, state.page, state.itemsPerPage, state.query]);
+  }, [getMovies]);
 
   return (
     <MoviesContext
       value={{
-        totalMovies: state.totalMovies,
-        movies: state.movies,
+        isFetching,
+        totalMovies,
+        movies,
         getMovies,
         nextPage,
         previousPage,
-        setItemsPerPageCount,
         setQueryString,
-        error: state.error,
+        errorMessage,
+        isNextPageDisabled,
+        isPreviousPageDisabled,
       }}
     >
       {children}

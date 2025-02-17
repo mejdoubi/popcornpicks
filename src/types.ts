@@ -18,7 +18,7 @@ export interface ValidationError {
 }
 
 export interface HTTPValidationError {
-  detail: ValidationError[];
+  detail: ValidationError[] | string;
 }
 
 export interface MoviesRequestParams {
@@ -28,18 +28,42 @@ export interface MoviesRequestParams {
 }
 
 export interface State {
+  isFetching: boolean;
   totalMovies: number;
   movies: Movie[];
   page: number;
-  itemsPerPage: number;
   query: string;
-  error: string | null;
+  errorMessage: string | null;
 }
 
 export type Action =
+  | { type: "SET_IS_FETCHING"; payload: boolean }
   | { type: "SET_TOTAL_MOVIES"; payload: number }
   | { type: "SET_MOVIES"; payload: Movie[] }
   | { type: "SET_PAGE"; payload: number }
-  | { type: "SET_ITEMS_PER_PAGE"; payload: number }
   | { type: "SET_QUERY"; payload: string }
-  | { type: "SET_ERROR"; payload: string };
+  | { type: "SET_ERROR_MESSAGE"; payload: string };
+
+export interface TMDBMovie {
+  adult: boolean;
+  backdrop_path: string;
+  genre_ids: number[];
+  id: number;
+  original_language: string;
+  original_title: string;
+  overview: string;
+  popularity: number;
+  poster_path: string;
+  release_date: string;
+  title: string;
+  video: boolean;
+  vote_average: number;
+  vote_count: number;
+}
+
+export interface TMDBSearchMovieResponse {
+  page: number;
+  results: TMDBMovie[];
+  total_pages: number;
+  total_results: number;
+}

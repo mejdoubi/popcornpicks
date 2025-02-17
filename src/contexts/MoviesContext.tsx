@@ -3,14 +3,16 @@ import { createContext } from "react";
 import { Movie } from "../types";
 
 export interface MoviesContextType {
+  isFetching: boolean;
   totalMovies: number;
   movies: Movie[];
   getMovies: () => void;
   nextPage: () => void;
   previousPage: () => void;
-  setItemsPerPageCount: (count: number) => void;
   setQueryString: (queryString: string) => void;
-  error: string | null;
+  errorMessage: string | null;
+  isNextPageDisabled: boolean;
+  isPreviousPageDisabled: boolean;
 }
 
 export const MoviesContext = createContext<MoviesContextType>(
