@@ -5,13 +5,13 @@ export const moviesReducer = (state: State, action: Action): State => {
     case "SET_IS_FETCHING":
       return { ...state, isFetching: action.payload };
     case "SET_MOVIES":
-      return { ...state, movies: action.payload, page: 1, errorMessage: null };
+      return { ...state, movies: action.payload, errorMessage: null };
     case "SET_TOTAL_MOVIES":
       return { ...state, totalMovies: action.payload };
     case "SET_PAGE":
-      return { ...state, page: action.payload };
+      return { ...state, page: action.payload, errorMessage: null };
     case "SET_QUERY":
-      return { ...state, query: action.payload };
+      return { ...state, query: action.payload, page: 1, errorMessage: null };
     case "SET_ERROR_MESSAGE":
       return { ...state, errorMessage: action.payload };
     default:

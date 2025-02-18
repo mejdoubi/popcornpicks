@@ -18,7 +18,7 @@ describe("moviesReducer", () => {
     expect(newState.isFetching).toBe(true);
   });
 
-  it("should set movies, reset page and errorMessage", () => {
+  it("should set movies and reset error message", () => {
     const movies: Movie[] = [
       {
         id: "1",
@@ -38,7 +38,6 @@ describe("moviesReducer", () => {
     const action: Action = { type: "SET_MOVIES", payload: movies };
     const newState = moviesReducer(initialState, action);
     expect(newState.movies).toEqual(movies);
-    expect(newState.page).toBe(1);
     expect(newState.errorMessage).toBeNull();
   });
 
@@ -48,16 +47,19 @@ describe("moviesReducer", () => {
     expect(newState.totalMovies).toBe(100);
   });
 
-  it("should set page", () => {
+  it("should set page and reset errorMessage", () => {
     const action: Action = { type: "SET_PAGE", payload: 2 };
     const newState = moviesReducer(initialState, action);
     expect(newState.page).toBe(2);
+    expect(newState.errorMessage).toBeNull();
   });
 
-  it("should set query", () => {
+  it("should set query, reset page and error message", () => {
     const action: Action = { type: "SET_QUERY", payload: "test" };
     const newState = moviesReducer(initialState, action);
     expect(newState.query).toBe("test");
+    expect(newState.page).toBe(1);
+    expect(newState.errorMessage).toBeNull();
   });
 
   it("should set error message", () => {
